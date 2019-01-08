@@ -10,11 +10,20 @@ bool motor1_ccw = false;
 bool motor2_cw = false;
 bool motor2_ccw = false;
 
+int speed_pwm = 0;
+double t_past = 0;
+int myAngle = 0;
+float pitch_past = 0;
+
 #define fwd true
 #define bck false
 
 #define inf_lim 0.14
 #define sup_lim 0.16
+
+#define Kp 0
+#define Ki 0
+#define Kd 0
 
 void setup() {
   // put your setup code here, to run once:
@@ -52,15 +61,17 @@ void loop() {
   }else{
     digitalWrite(PC13, HIGH); //go
 
+    speed_pwm = PID(inf_lim);
+
     if(average_acce_z() < inf_lim){
       //Serial.println("fwd");
-      motor_a(fwd,100);
-      motor_b(fwd,100);
+      motor_a(fwd,speed_pwm);
+      motor_b(fwd,speed_pwm);
     }
     if(average_acce_z() > sup_lim){
       //Serial.println("bck");
-      motor_a(bck,100);
-      motor_b(bck,100);
+      motor_a(bck,speed_pwm);
+      motor_b(bck,speed_pwm);
     }
     //Serial.println(average_acce_z());
       
@@ -117,4 +128,27 @@ void motor_b(bool direction, int speed){
     digitalWrite(PA4,LOW);  // Motor B2 bck
     digitalWrite(PA5,HIGH);
   }
+}
+
+int PID(float pitch) {            
+ 
+    double t_now = millis();
+    double dif_time = double(t_now - t_past);
+ 
+    float error = myAngle - pitch;
+ 
+    float p = Kp * error;
+    float i = i + Ki * error * dif_time;
+    float d = Kd * (pitch - pitch_past) / dif_time; 
+ 
+    pitch_past = pitch;
+    t_past = t_now;
+ 
+    float PID = p + i - d;
+ 
+    // making sure the values stay betwen where they sould be
+    if (PID > 255) PID = 255;
+    else if (PID < -255) PID = -255; 
+
+    return int(PID);
 }
