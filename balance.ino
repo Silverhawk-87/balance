@@ -15,6 +15,10 @@ double t_past = 0;
 int myAngle = 0;
 float pitch_past = 0;
 
+String incoming_serial = "Hey";
+String t_incoming_serial = "temp Hey";
+int kp = 0;
+
 #define fwd true
 #define bck false
 
@@ -54,6 +58,23 @@ void loop() {
   Gyro_Y = Wire.read()<<8 | Wire.read();
   Gyro_Z = Wire.read()<<8 | Wire.read();
 */
+
+   if(Serial.available() >0){
+    incoming_serial = Serial.readString();
+    }
+
+  t_incoming_serial = incoming_serial.substring(1);
+
+  if(incoming_serial[0] == 'p')
+  kp = t_incoming_serial.toInt();
+
+  Serial.print("temp incoming = ");
+  Serial.println(t_incoming_serial);
+
+  Serial.print("kp = ");
+  Serial.println(kp);
+    
+  
   // Serial.println(average_acce_z());
 
   if(average_acce_z() < sup_lim && average_acce_z() > inf_lim){
@@ -98,7 +119,6 @@ double average_acce_z(){
     Ax_z = Acce_Z/16384.0;
 
     // Serial.println(Ax_z);
-  
     
     average = average + Ax_z;
   }
